@@ -1,7 +1,7 @@
 """
 Pipeline modulaire pour la prédiction de churn client
-Auteur: [Votre Nom]
-Date: [Date]
+Auteur: []
+Date: []
 """
 
 import pandas as pd
@@ -596,45 +596,105 @@ def plot_roc_curve(model, X_test, y_test, model_name=""):
         plt.grid(True)
         plt.show()
 
+# ...existing code...
 def save_model(model, scaler, encoders, filepath):
     """
-    Sauvegarde le modèle et les préprocesseurs
-    
-    Parameters:
-    model: Modèle entraîné
-    scaler: StandardScaler ajusté
-    encoders (dict): Encodeurs utilisés
-    filepath (str): Chemin de sauvegarde
+    Sauvegarde le modèle, le scaler et les encodeurs dans un seul fichier joblib/pka.
+    Accepte les extensions: .joblib, .pkl, .pka (préférer .pka si demandé).
     """
     try:
-        model_data = {
-            'model': model,
-            'scaler': scaler,
-            'encoders': encoders,
-            'metadata': {
-                'saved_at': pd.Timestamp.now(),
-                'model_type': type(model).__name__
+        import os
+        parent = os.path.dirname(filepath)
+        if parent and not os.path.exists(parent):
+            os.makedirs(parent, exist_ok=True)
+
+        # Autoriser .pka comme extension valide
+        if not filepath.lower().endswith(('.joblib', '.pkl', '.pka')):
+            filepath = filepath + '.joblib'
+
+        bundle = {
+            "model": model,
+            "scaler": scaler,
+            "encoders": encoders,
+            "metadata": {
+                "saved_at": pd.Timestamp.now(),
+                "model_type": type(model).__name__
             }
         }
-        joblib.dump(model_data, filepath)
-        print(f"✅ Modèle sauvegardé: {filepath}")
+
+        # compression raisonnable
+        joblib.dump(bundle, filepath, compress=3)
+        print(f"✅ Modèle sauvegardé avec succès dans : {filepath}")
+        return filepath
     except Exception as e:
-        print(f"❌ Erreur lors de la sauvegarde: {e}")
+        print(f"❌ Erreur lors de la sauvegarde du modèle : {e}")
+        return None
+
+def load_saved_model(filepath):
+    """
+    Recharge le modèle + scaler + encodeurs depuis un fichier joblib/pkl/pka.
+    Retourne tuple (model, scaler, encoders) ou (None, None, None) en cas d'erreur.
+    """
+    try:
+        import os
+        candidates = [filepath]
+
+        # si le chemin fourni n'existe pas, tenter avec extensions usuelles
+        if not os.path.exists(filepath):
+            for ext in ('.pka', '.joblib', '.pkl'):
+                if os.path.exists(filepath + ext):
+                    candidates = [filepath + ext]
+                    break
+
+        bundle = None
+        tried = []
+        for f in candidates:
+            tried.append(f)
+            try:
+                bundle = joblib.load(f)
+                filepath = f
+                break
+            except Exception:
+                bundle = None
+
+        if bundle is None:
+            # essayer toutes les extensions si les candidats initiaux n'ont pas marché
+            for ext in ('.pka', '.joblib', '.pkl'):
+                path_with_ext = filepath if filepath.lower().endswith(ext) else filepath + ext
+                if os.path.exists(path_with_ext):
+                    try:
+                        bundle = joblib.load(path_with_ext)
+                        filepath = path_with_ext
+                        break
+                    except Exception:
+                        bundle = None
+
+        if bundle is None:
+            print(f"❌ Impossible de charger le fichier. Fichiers testés: {tried}")
+            return None, None, None
+
+        print(f"✅ Modèle chargé avec succès depuis : {filepath}")
+        return bundle.get("model"), bundle.get("scaler"), bundle.get("encoders")
+    except Exception as e:
+        print(f"❌ Erreur lors du chargement : {e}")
+        return None, None, None
+# ...existing code...
 
 def load_model(filepath):
     """
-    Charge le modèle et les préprocesseurs
+    Charge le modèle sauvegardé (alias pour load_saved_model pour la compatibilité)
     
     Parameters:
-    filepath (str): Chemin du modèle sauvegardé
+    filepath (str): Chemin vers le fichier du modèle
     
     Returns:
-    dict: Modèle et préprocesseurs chargés
+    dict: Dictionnaire contenant le modèle, scaler et encodeurs
     """
-    try:
-        model_data = joblib.load(filepath)
-        print(f"✅ Modèle chargé: {filepath}")
-        return model_data
-    except Exception as e:
-        print(f"❌ Erreur lors du chargement: {e}")
-        return None
+    model, scaler, encoders = load_saved_model(filepath)
+    if model is not None:
+        return {
+            'model': model,
+            'scaler': scaler,
+            'encoders': encoders
+        }
+    return None
