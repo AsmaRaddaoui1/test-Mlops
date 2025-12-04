@@ -7,7 +7,7 @@ from model_pipeline import (
 )
 
 # Définir les chemins
-PROJECT_DIR = Path(r"d:\projet_Mlopq")
+PROJECT_DIR = Path(__file__).parent  # dossier du script main.py
 TRAIN_CSV = PROJECT_DIR / "churn-bigml-80.csv"
 TEST_CSV = PROJECT_DIR / "churn-bigml-20.csv"
 RESULT_DIR = PROJECT_DIR / "resultat"
@@ -82,7 +82,15 @@ def main():
         plot_roc_curve(model_loaded, X_test, y_test, model_name=best_name)
     except Exception:
         pass
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Hello Asma, Flask is running!"
+
 if __name__ == "__main__":
     main()
 
 # model_pipeline.py
+

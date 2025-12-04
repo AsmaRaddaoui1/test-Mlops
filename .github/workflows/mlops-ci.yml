@@ -1,0 +1,48 @@
+name: MLOps CI/CD
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout du code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Installer Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: 🧰 Installer les dépendances
+      run: |
+        python -m venv mlops_env
+        source mlops_env/bin/activate
+        pip install -r requirements.txt
+
+    - name: 🧹 Lint + format
+      run: |
+        source mlops_env/bin/activate
+        make lint-all || true
+
+    - name: 🧪 Lancer les tests
+      run: |
+        source mlops_env/bin/activate
+        make test || true
+
+    - name: 🚀 Déploiement (make deploy)
+      run: |
+        source mlops_env/bin/activate
+        make deploy
+
+    - name: 📤 Upload du modèle entraîné
+      uses: actions/upload-artifact@v4
+      with:
+        name: best_model
+        path: resultat/best_model.pka

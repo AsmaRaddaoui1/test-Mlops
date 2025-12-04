@@ -12,3 +12,10 @@ scipy>=1.7.0
 pytest>=6.0.0
 pytest-cov>=2.10.0
 coverage>=5.0
+flask
+fastapi
+uvicorn
+streamlit>=1.28.0
+requests>=2.31.0
+pandas>=1.5.0
+plotly>=5.15.0
