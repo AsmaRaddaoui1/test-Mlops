@@ -5,12 +5,22 @@ import numpy as np
 from pathlib import Path
 import sys
 import joblib
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler
 from typing import List, Dict, Any, Optional
+
 
 # --- Configuration du chemin ---
 PROJECT_DIR = Path(__file__).parent
 sys.path.append(str(PROJECT_DIR))
+# --- Vérifier si le modèle existe ---
+MODEL_PATH = PROJECT_DIR / "resultat" / "best_model.pka"
+
+if not MODEL_PATH.exists():
+    print(f"⚠️  Attention: Le modèle {MODEL_PATH} n'existe pas")
+    print("📝 Création d'un modèle par défaut...")
+    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    
+
 
 # --- Import des fonctions depuis model_pipeline ---
 try:

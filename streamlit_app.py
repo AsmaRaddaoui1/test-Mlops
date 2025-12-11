@@ -16,8 +16,11 @@ st.set_page_config(
 st.title("📊 Dashboard de Prédiction de Churn Client")
 st.markdown("Interface pour interagir avec l'API de prédiction de désabonnement")
 
+import os   # ✅ Ajout ici
+
+# Par défaut, utiliser host.docker.internal
+API_URL = os.getenv("API_URL", "http://host.docker.internal:8000")
 # URL de l'API
-API_URL = "http://localhost:8000"
 
 # Sidebar pour la navigation
 st.sidebar.title("Navigation")

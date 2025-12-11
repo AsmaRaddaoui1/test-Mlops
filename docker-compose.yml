@@ -1,0 +1,29 @@
+services:
+  fastapi:
+    image: asma_raddaoui_ds6_mlops
+    container_name: fastapi
+    environment:
+      - SERVICE=fastapi
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./resultat:/app/resultat
+    networks:
+      - mlnet
+
+  streamlit:
+    image: asma_raddaoui_ds6_mlops
+    container_name: streamlit
+    environment:
+      - SERVICE=streamlit
+      - API_URL=http://fastapi:8000   # ✅ utiliser le nom du service
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./resultat:/app/resultat
+    networks:
+      - mlnet
+
+networks:
+  mlnet:
+    driver: bridge

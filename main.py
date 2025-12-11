@@ -1,5 +1,6 @@
 # main.py
 from pathlib import Path
+from flask import Flask
 from model_pipeline import (
     load_data, explore_data, preprocess_data, handle_outliers, create_features,
     remove_correlated_features, prepare_training_data, initialize_models,
@@ -93,4 +94,3 @@ if __name__ == "__main__":
     main()
 
 # model_pipeline.py
-

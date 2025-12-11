@@ -154,3 +154,37 @@ STREAMLIT_PORT = 8501
 streamlit:
 	@echo "🚀 Démarrage de Streamlit..."
 	streamlit run $(STREAMLIT_APP) --server.port $(STREAMLIT_PORT)
+
+
+# Nom de l'image Docker
+DOCKER_IMAGE = asma_raddaoui_ds6_mlops
+
+# Construire l'image Docker
+docker-build:
+	docker build -t $(DOCKER_IMAGE) .
+
+# Lancer FastAPI via Docker
+docker-run-fastapi:
+	docker run -e SERVICE=fastapi -p 8000:8000 -v /mnt/d/projet_Mlopq/resultat:/app/resultat $(DOCKER_IMAGE)
+
+# Lancer les tests via Docker
+docker-test:
+	docker run -e SERVICE=test $(DOCKER_IMAGE)
+
+# Taguer l'image pour Docker Hub
+docker-tag:
+	docker tag $(DOCKER_IMAGE) ton_dockerhub_utilisateur/$(DOCKER_IMAGE):latest
+
+# Pousser l'image sur Docker Hub
+
+docker-push:
+	docker push ton_dockerhub_utilisateur/$(DOCKER_IMAGE):latest
+docker-run-streamlit:
+	docker run \
+		-e SERVICE=streamlit \
+		-p 8501:8501 \
+		--add-host=host.docker.internal:host-gateway \
+		-v /mnt/d/projet_Mlopq/resultat:/app/resultat \
+		$(DOCKER_IMAGE)
+
+

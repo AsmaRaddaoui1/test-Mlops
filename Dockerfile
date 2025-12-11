@@ -1,25 +1,32 @@
-# Utilise une image Python légère
-FROM python:3.11-slim
+FROM python:3.10-slim
 
-# Met à jour le système et installe les dépendances nécessaires
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    git \
+    build-essential curl git \
     && rm -rf /var/lib/apt/lists/*
 
-# Définir le répertoire de travail
 WORKDIR /app
 
-# Copier les fichiers de requirements ou Makefile
-COPY requirements.txt ./
+RUN pip install --upgrade pip
 
+# Dépendances principales
+RUN pip install --no-cache-dir numpy pandas scipy scikit-learn==1.3.2 fastapi uvicorn mlflow
 
-# Installer les outils de lint globalement
-RUN pip install --no-cache-dir black isort flake8 pylint mypy bandit safety radon pydocstyle
+# Copier requirements.txt
+COPY requirements.txt .
 
-# Copier le reste du code
+# Installer dépendances supplémentaires
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Créer répertoire résultat
+RUN mkdir -p /app/resultat
+
+# Copier tout le code
 COPY . .
 
-# Commande par défaut pour entrer dans le conteneur
-CMD ["/bin/bash"]
+# Copier et rendre exécutable le script entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 8000 8501
+
+ENTRYPOINT ["/entrypoint.sh"]
